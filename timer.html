@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .timer-container {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #1e293b;
+      color: white;
+      border-radius: 12px;
+      padding: 24px;
+      text-align: center;
+      max-width: 400px;
+      margin: 0 auto;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .time-display {
+      font-size: 4rem;
+      font-weight: bold;
+      margin: 20px 0;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 20px 0;
+    }
+
+    .quick-times {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin: 20px 0;
+    }
+
+    button {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    button:disabled {
+      background: #64748b;
+      cursor: not-allowed;
+    }
+
+    .quick-times button {
+      background: #334155;
+    }
+
+    .quick-times button:hover {
+      background: #475569;
+    }
+
+    input {
+      width: 80px;
+      padding: 10px;
+      border: 1px solid #475569;
+      background: #334155;
+      color: white;
+      border-radius: 6px;
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    input::placeholder {
+      color: #94a3b8;
+    }
+
+    .notification-toggle {
+      margin-top: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .status {
+      margin-top: 10px;
+      font-size: 0.875rem;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="timer-container">
+    <div>
+      <input type="number" id="minutesInput" placeholder="Minutes" min="1" max="999">
+    </div>
+    
+    <div class="quick-times">
+      <button onclick="setMinutes(5)">5m</button>
+      <button onclick="setMinutes(10)">10m</button>
+      <button onclick="setMinutes(15)">15m</button>
+      <button onclick="setMinutes(30)">30m</button>
+      <button onclick="setMinutes(45)">45m</button>
+      <button onclick="setMinutes(60)">60m</button>
+    </div>
+
+    <div class="time-display" id="display">00:00</div>
+    
+    <div class="controls">
+      <button id="startBtn">Start</button>
+      <button id="pauseBtn" disabled>Pause</button>
+      <button id="resetBtn">Reset</button>
+    </div>
+
+    <div class="notification-toggle">
+      <input type="checkbox" id="soundToggle" checked>
+      <label for="soundToggle">Sound notification</label>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    let timeLeft = 0;
+    let timerId = null;
+    const display = document.getElementById('display');
+    const startBtn = document.getElementById('startBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const minutesInput = document.getElementById('minutesInput');
+    const soundToggle = document.getElementById('soundToggle');
+    const status = document.getElementById('status');
+
+    // Create audio element for notification
+    const audio = new Audio('data:audio/wav;base64,...'); // Replace with your audio data
+
+    function updateDisplay() {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    }
+
+    function setMinutes(minutes) {
+      timeLeft = minutes * 60;
+      updateDisplay();
+    }
+
+    startBtn.addEventListener('click', () => {
+      if (timeLeft > 0) {
+        startBtn.disabled = true;
+        pauseBtn.disabled = false;
+        resetBtn.disabled = false;
+        status.textContent = "Timer started!";
+        timerId = setInterval(() => {
+          timeLeft--;
+          updateDisplay();
+          if (timeLeft <= 0) {
+            clearInterval(timerId);
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            status.textContent = "Time's up!";
+            if (soundToggle.checked) audio.play();
+          }
+        }, 1000);
+      }
+    });
+
+    pauseBtn.addEventListener('click', () => {
+      clearInterval(timerId);
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      status.textContent = "Timer paused.";
+    });
+
+    resetBtn.addEventListener('click', () => {
+      clearInterval(timerId);
+      timeLeft = 0;
+      updateDisplay();
+      startBtn.disabled = false;
+      pauseBtn.disabled = true;
+      resetBtn.disabled = true;
+      status.textContent = "Timer reset.";
+    });
+
+    minutesInput.addEventListener('change', () => {
+      const minutes = parseInt(minutesInput.value);
+      if (!isNaN(minutes) && minutes > 0) {
+        setMinutes(minutes);
+      }
+    });
+
+    updateDisplay(); // Initialize display
+  </script>
+</body>
+</html>
