@@ -1,6 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Timer</title>
   <style>
     .timer-container {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -22,18 +25,10 @@
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
-    .controls {
+    .controls, .quick-times {
       display: flex;
       gap: 10px;
       justify-content: center;
-      margin: 20px 0;
-    }
-
-    .quick-times {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      flex-wrap: wrap;
       margin: 20px 0;
     }
 
@@ -48,22 +43,11 @@
       transition: background 0.2s;
     }
 
-    button:hover {
-      background: #2563eb;
-    }
+    button:hover { background: #2563eb; }
+    button:disabled { background: #64748b; cursor: not-allowed; }
 
-    button:disabled {
-      background: #64748b;
-      cursor: not-allowed;
-    }
-
-    .quick-times button {
-      background: #334155;
-    }
-
-    .quick-times button:hover {
-      background: #475569;
-    }
+    .quick-times button { background: #334155; }
+    .quick-times button:hover { background: #475569; }
 
     input {
       width: 80px;
@@ -76,9 +60,7 @@
       text-align: center;
     }
 
-    input::placeholder {
-      color: #94a3b8;
-    }
+    input::placeholder { color: #94a3b8; }
 
     .notification-toggle {
       margin-top: 15px;
@@ -137,7 +119,6 @@
     const soundToggle = document.getElementById('soundToggle');
     const status = document.getElementById('status');
 
-    // Create audio element for notification
     const audio = new Audio('data:audio/wav;base64,...'); // Replace with your audio data
 
     function updateDisplay() {
