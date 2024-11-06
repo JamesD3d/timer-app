@@ -10,7 +10,7 @@
     <input type="number" id="minutesInput" placeholder="Minutes" min="0" max="999">
     <input type="number" id="secondsInput" placeholder="Seconds" min="0" max="59">
     <button id="startBtn">Start Timer</button>
-    <button id="cancelBtn" disabled>Cancel Timer</button> <!-- New Cancel Button -->
+    <button id="cancelBtn" disabled>Cancel Timer</button>
   </div>
 
   <div id="timerDisplay">00:00</div>
@@ -18,7 +18,8 @@
   <script>
     let timerId;
     let timeLeft;
-    const alarmSound = new Audio('alarm-sound.mp3'); // Replace with actual file path
+    let soundTimeout;
+    const alarmSound = new Audio('alarm-sound.mp3'); // Ensure this path is correct
 
     function requestNotificationPermission() {
       if (Notification.permission === 'default') {
@@ -44,10 +45,18 @@
         } else {
           clearInterval(timerId);
           showNotification(); // Show browser notification
-          alarmSound.play().catch(error => console.log(error)); // Play sound
+          playAlarmSound(); // Play sound for 10 seconds
           resetButtons();
         }
       }, 1000);
+    }
+
+    function playAlarmSound() {
+      alarmSound.play().catch(error => console.log("Audio playback error:", error));
+      soundTimeout = setTimeout(() => {
+        alarmSound.pause(); // Stop after 10 seconds
+        alarmSound.currentTime = 0; // Reset playback to the beginning
+      }, 3000); // 10 seconds
     }
 
     function showNotification() {
@@ -63,6 +72,9 @@
 
     function cancelTimer() {
       clearInterval(timerId); // Stop the timer
+      clearTimeout(soundTimeout); // Clear sound timeout if timer is canceled
+      alarmSound.pause(); // Stop any playing sound
+      alarmSound.currentTime = 0; // Reset playback to the beginning
       timeLeft = 0; // Reset time
       displayTime(); // Update display to 00:00
       resetButtons(); // Reset buttons to their default state
@@ -82,7 +94,7 @@
 
     // Event listeners
     document.getElementById("startBtn").addEventListener("click", startTimer);
-    document.getElementById("cancelBtn").addEventListener("click", cancelTimer); // Cancel Button event
+    document.getElementById("cancelBtn").addEventListener("click", cancelTimer);
 
     // Request permission for notifications on page load
     requestNotificationPermission();
