@@ -52,10 +52,12 @@
     }
 
     function playAlarmSound() {
+      // Start playing the alarm sound
       alarmSound.play().catch(error => console.log("Audio playback error:", error));
+      // Stop the sound after 10 seconds
       soundTimeout = setTimeout(() => {
-        alarmSound.pause(); // Stop after 10 seconds
-        alarmSound.currentTime = 0; // Reset playback to the beginning
+        alarmSound.pause(); // Stop sound
+        alarmSound.currentTime = 0; // Reset to beginning
       }, 3000); // 10 seconds
     }
 
@@ -73,7 +75,7 @@
     function cancelTimer() {
       clearInterval(timerId); // Stop the timer
       clearTimeout(soundTimeout); // Clear sound timeout if timer is canceled
-      alarmSound.pause(); // Stop any playing sound
+      alarmSound.pause(); // Stop any playing sound immediately
       alarmSound.currentTime = 0; // Reset playback to the beginning
       timeLeft = 0; // Reset time
       displayTime(); // Update display to 00:00
