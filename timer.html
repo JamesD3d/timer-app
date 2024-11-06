@@ -3,180 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple Timer</title>
-  <style>
-    .timer-container {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #1e293b;
-      color: white;
-      border-radius: 12px;
-      padding: 24px;
-      text-align: center;
-      max-width: 400px;
-      margin: 0 auto;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .time-display {
-      font-size: 4rem;
-      font-weight: bold;
-      margin: 20px 0;
-      font-variant-numeric: tabular-nums;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    }
-
-    .controls, .quick-times {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin: 20px 0;
-    }
-
-    button {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1rem;
-      transition: background 0.2s;
-    }
-
-    button:hover { background: #2563eb; }
-    button:disabled { background: #64748b; cursor: not-allowed; }
-
-    .quick-times button { background: #334155; }
-    .quick-times button:hover { background: #475569; }
-
-    input {
-      width: 80px;
-      padding: 10px;
-      border: 1px solid #475569;
-      background: #334155;
-      color: white;
-      border-radius: 6px;
-      font-size: 1rem;
-      text-align: center;
-    }
-
-    input::placeholder { color: #94a3b8; }
-
-    .notification-toggle {
-      margin-top: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-
-    .status {
-      margin-top: 10px;
-      font-size: 0.875rem;
-      color: #94a3b8;
-    }
-  </style>
+  <title>JavaScript Timer with Alarm and Cancel Button</title>
 </head>
 <body>
-  <div class="timer-container">
-    <div>
-      <input type="number" id="minutesInput" placeholder="Minutes" min="1" max="999">
-    </div>
-    
-    <div class="quick-times">
-      <button onclick="setMinutes(5)">5m</button>
-      <button onclick="setMinutes(10)">10m</button>
-      <button onclick="setMinutes(15)">15m</button>
-      <button onclick="setMinutes(30)">30m</button>
-      <button onclick="setMinutes(45)">45m</button>
-      <button onclick="setMinutes(60)">60m</button>
-    </div>
-
-    <div class="time-display" id="display">00:00</div>
-    
-    <div class="controls">
-      <button id="startBtn">Start</button>
-      <button id="pauseBtn" disabled>Pause</button>
-      <button id="resetBtn">Reset</button>
-    </div>
-
-    <div class="notification-toggle">
-      <input type="checkbox" id="soundToggle" checked>
-      <label for="soundToggle">Sound notification</label>
-    </div>
-
-    <div class="status" id="status"></div>
+  <div>
+    <input type="number" id="minutesInput" placeholder="Minutes" min="0" max="999">
+    <input type="number" id="secondsInput" placeholder="Seconds" min="0" max="59">
+    <button id="startBtn">Start Timer</button>
+    <button id="cancelBtn" disabled>Cancel Timer</button> <!-- New Cancel Button -->
   </div>
 
+  <div id="timerDisplay">00:00</div>
+
   <script>
-    let timeLeft = 0;
     let timerId = null;
-    const display = document.getElementById('display');
-    const startBtn = document.getElementById('startBtn');
-    const pauseBtn = document.getElementById('pauseBtn');
-    const resetBtn = document.getElementById('resetBtn');
-    const minutesInput = document.getElementById('minutesInput');
-    const soundToggle = document.getElementById('soundToggle');
-    const status = document.getElementById('status');
+    let timeLeft = 0;
+    const alarmSound = new Audio('path/to/your-alarm-sound.mp3'); // Replace with actual file path or use a base64 audio string
 
-    const audio = new Audio('data:audio/wav;base64,...'); // Replace with your audio data
+    function startTimer() {
+      const minutes = parseInt(document.getElementById("minutesInput").value) || 0;
+      const seconds = parseInt(document.getElementById("secondsInput").value) || 0;
+      timeLeft = (minutes * 60) + seconds;
 
-    function updateDisplay() {
+      if (timerId) clearInterval(timerId); // Clear any previous interval
+
+      // Enable Cancel Button, disable Start Button
+      document.getElementById("cancelBtn").disabled = false;
+      document.getElementById("startBtn").disabled = true;
+
+      timerId = setInterval(() => {
+        if (timeLeft > 0) {
+          timeLeft--;
+          displayTime();
+        } else {
+          clearInterval(timerId);
+          timerId = null;
+          alert("Time's up!"); // Visual notification
+          alarmSound.play(); // Play sound
+          resetButtons();
+        }
+      }, 1000);
+    }
+
+    function cancelTimer() {
+      if (timerId) {
+        clearInterval(timerId); // Stop the timer
+        timerId = null;
+      }
+      timeLeft = 0; // Reset time
+      displayTime(); // Update display to 00:00
+      resetButtons(); // Reset buttons to their default state
+    }
+
+    function displayTime() {
       const minutes = Math.floor(timeLeft / 60);
       const seconds = timeLeft % 60;
-      display.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      document.getElementById("timerDisplay").textContent =
+        `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     }
 
-    function setMinutes(minutes) {
-      timeLeft = minutes * 60;
-      updateDisplay();
+    function resetButtons() {
+      document.getElementById("startBtn").disabled = false;
+      document.getElementById("cancelBtn").disabled = true;
     }
 
-    startBtn.addEventListener('click', () => {
-      if (timeLeft > 0) {
-        startBtn.disabled = true;
-        pauseBtn.disabled = false;
-        resetBtn.disabled = false;
-        status.textContent = "Timer started!";
-        timerId = setInterval(() => {
-          timeLeft--;
-          updateDisplay();
-          if (timeLeft <= 0) {
-            clearInterval(timerId);
-            startBtn.disabled = false;
-            pauseBtn.disabled = true;
-            status.textContent = "Time's up!";
-            if (soundToggle.checked) audio.play();
-          }
-        }, 1000);
-      }
-    });
+    // Event listeners
+    document.getElementById("startBtn").addEventListener("click", startTimer);
+    document.getElementById("cancelBtn").addEventListener("click", cancelTimer);
 
-    pauseBtn.addEventListener('click', () => {
-      clearInterval(timerId);
-      startBtn.disabled = false;
-      pauseBtn.disabled = true;
-      status.textContent = "Timer paused.";
-    });
-
-    resetBtn.addEventListener('click', () => {
-      clearInterval(timerId);
-      timeLeft = 0;
-      updateDisplay();
-      startBtn.disabled = false;
-      pauseBtn.disabled = true;
-      resetBtn.disabled = true;
-      status.textContent = "Timer reset.";
-    });
-
-    minutesInput.addEventListener('change', () => {
-      const minutes = parseInt(minutesInput.value);
-      if (!isNaN(minutes) && minutes > 0) {
-        setMinutes(minutes);
-      }
-    });
-
-    updateDisplay(); // Initialize display
+    // Initialize display
+    displayTime();
   </script>
 </body>
 </html>
